@@ -1,0 +1,21 @@
+# Canonical model configuration shared by inference and every training mode.
+model:
+  d_model: 640
+  nhead: 10
+  num_layers: 6
+  dropout: 0.2
+  latent_dim: 96
+  esm:
+    enabled: true
+    model_name: facebook/esm2_t33_650M_UR50D
+    gradient_checkpointing: false
+    scalar_mix_layers: 4
+    lora:
+      enabled: true
+      r: 4
+      alpha: 8
+      dropout: 0.05
+      target_modules: [query, value]
+      last_n_layers: 4
+  target_encoder:
+    num_layers: 3

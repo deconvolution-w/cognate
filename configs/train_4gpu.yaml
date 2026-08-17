@@ -1,0 +1,54 @@
+base_config: model.yaml
+
+project:
+  seed: 3407
+
+data:
+  train_file: ../data/training/train.csv
+  val_file: ../data/training/val.csv
+  # Per-GPU batch; global batch = 256 x 4 = 1024.
+  batch_size: 256
+  num_workers: 4
+
+model:
+  esm:
+    gradient_checkpointing: true
+
+training:
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  num_epochs: 120
+  output_dir: ../outputs/train_4gpu
+  mixed_precision: bf16
+  gradient_accumulation_steps: 1
+  beta_kl: 0.01
+  kl_annealing:
+    total_steps: 1200
+  lambda_task_a: 2.0
+  lambda_task_b: 1.0
+  mhc_random_include_prob: 0.5
+  denoising:
+    mask_prob: 0.1
+  generation_metrics:
+    enabled: true
+    every_epochs: 1
+    max_rows: 256
+    batch_size: 16
+    beam_width: 5
+    max_len: 30
+  early_stopping:
+    enabled: true
+    min_epochs: 20
+    patience: 10
+    min_delta: 0.00001
+
+loss:
+  blosum:
+    temperature: 2.0
+    weight_start: 0.05
+    weight_end: 0.0
+    decay_start_frac: 0.3
+    decay_end_frac: 0.8
+  physicochemical:
+    weight: 0.1
+    variance_weight: 0.5

@@ -1,0 +1,6 @@
+base_config: model.yaml
+
+# Inference uses the canonical model without gradient checkpointing.
+model:
+  esm:
+    gradient_checkpointing: false
