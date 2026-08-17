@@ -73,9 +73,8 @@ curl -L \
   -o checkpoints/checkpoint.pth
 ```
 
-Its expected SHA-256 checksum and byte size are recorded in
-`checkpoints/README.md`. The inference configuration and checkpoint paths are
-resolved automatically. Use `--config` or `--checkpoint` to override them.
+The inference configuration and checkpoint paths are resolved automatically.
+Use `--config` or `--checkpoint` to override them.
 
 ### Configuration layout
 
@@ -190,7 +189,7 @@ candidate.
 | `overlap` (default) | Targets are distinct, dispersed, or their geometry is unknown | Every target endpoint plus the shared bridge neighbourhood |
 | `bridge` | Targets are known to be closely related variants | Shared bridge neighbourhood only |
 
-### Single target set
+### Command-line generation
 
 ```bash
 python -m src.cli generate-multitarget \
@@ -200,7 +199,7 @@ python -m src.cli generate-multitarget \
   --out outputs/multitarget.csv
 ```
 
-### Multiple target sets
+### Batch generation
 
 Use one CSV row per target set. The `targets` column contains semicolon-separated
 peptides; the optional `off_targets` column uses the same format. See
@@ -228,6 +227,8 @@ python -m src.cli score \
   --cdr3 CASSLGQGAEAFF \
   --hla 'HLA-A*02:01'
 ```
+
+### Batch scoring
 
 For batch scoring, provide a CSV containing `peptide`, `cdr3`, and either `hla`
 or `hla_sequence`. See `data/examples/pairs.csv`.
@@ -281,32 +282,6 @@ for complete triplets, `full_1472`. The metadata CSV maps input rows to arrays
 and records representation names, dimensions, and batch size. Use
 `--max-rows N` to limit the export.
 
-## Generation evaluation
-
-Evaluate the released checkpoint on the complete held-out test split with the
-same beam-search and metric definitions used for the reported results:
-
-```bash
-python scripts/evaluate_generation_metrics.py \
-  --input data/training/test.csv \
-  --config configs/inference.yaml \
-  --checkpoint checkpoints/checkpoint.pth \
-  --device cuda:0 \
-  --out outputs/test_evaluation \
-  --batch-size 32 \
-  --beam-width 5 \
-  --max-len 25
-```
-
-The released checkpoint produces approximately:
-
-| Metric | COGNATE |
-|---|---:|
-| CDR3β Recovery ↑ | 0.559 |
-| Character-level BLEU ↑ | 0.286 |
-| BLOSUM62 ↑ | 18.34 |
-| k-mer Jensen–Shannon distance ↓ | 0.567 |
-
 ## Training
 
 Training, validation, and held-out test splits are included in `data/training/`.
@@ -319,98 +294,17 @@ Run the formal four-GPU training from the repository root:
 CUDA_VISIBLE_DEVICES=0,1,2,3 bash scripts/train_4gpu.sh
 ```
 
-The launcher above is equivalent to:
-
-```bash
-mkdir -p outputs/train_4gpu
-CUDA_VISIBLE_DEVICES=0,1,2,3 \
-PYTHONPATH=. \
-HF_HUB_OFFLINE=1 \
-TRANSFORMERS_OFFLINE=1 \
-accelerate launch \
-  --multi_gpu \
-  --num_processes 4 \
-  --mixed_precision bf16 \
-  --main_process_port 0 \
-  --rdzv_backend static \
-  --module src.training \
-  --config configs/train_4gpu.yaml \
-  --output outputs/train_4gpu \
-  2>&1 | tee outputs/train_4gpu/training.log
-```
-
-The canonical model configuration is `configs/model.yaml`. The four-GPU
-training settings are in `configs/train_4gpu.yaml`, which inherits that model.
-The training configuration retains the manuscript reciprocal task weights, KL
-schedule, BLOSUM62 and physicochemical losses, HLA omission, denoising,
-gradient clipping, cosine schedule, and early stopping.
-Logs, history CSV/JSON, TensorBoard events, and the best checkpoint are written
-to `outputs/train_4gpu/`.
-
-To continue an interrupted run from its last saved best epoch, pass the same
-output directory as the third argument:
-
-```bash
-CUDA_VISIBLE_DEVICES=0,1,2,3 bash scripts/train_4gpu.sh \
-  configs/train_4gpu.yaml outputs/train_4gpu outputs/train_4gpu
-```
-
-Weights-only checkpoints do not include optimizer state. Resuming restores the
-epoch, history, best validation loss, and learning-rate position, but
-reinitializes optimizer and random-number-generator state.
-
 For adaptive single-device training, run:
 
 ```bash
 bash scripts/train_single.sh
 ```
 
-The single-device training settings are in `configs/train_single.yaml`. Both
-training configurations inherit `configs/model.yaml`, so the model
-architecture is identical. Their losses and optimisation settings are also
-kept aligned. The single-device launcher uses one CUDA GPU when CUDA is
-available and falls back to CPU otherwise.
-Device selection is controlled by `runtime.device`, and its GPU/CPU batch sizes
-are controlled by `data.gpu_batch_size` and `data.cpu_batch_size`.
-
 To select a particular GPU, expose only that device:
 
 ```bash
 CUDA_VISIBLE_DEVICES=2 bash scripts/train_single.sh
 ```
-
-To force CPU even when a GPU is available, change the configuration to:
-
-```yaml
-runtime:
-  device: cpu
-```
-
-The batch size is also configured in YAML:
-
-```yaml
-data:
-  batch_size: 4
-  gpu_batch_size: 4
-  cpu_batch_size: 1
-```
-
-To follow training or inspect TensorBoard:
-
-```bash
-tail -f outputs/train_4gpu/training.log
-tensorboard --logdir outputs/train_4gpu/tensorboard --port 6006
-```
-
-## Citation
-
-If you use COGNATE in your research, please cite the accompanying manuscript:
-
-> *Learning the constraints of T-cell antigen perception with a reciprocal
-> immune language model.*
-
-The complete bibliographic record can be added when the manuscript record is
-publicly available.
 
 ## License
 
