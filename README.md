@@ -63,12 +63,14 @@ first CLI command to allow Transformers to download the model files.
 
 ### 2. Install the COGNATE checkpoint
 
-The approximately 2.8 GiB checkpoint is not tracked in Git. Download it from
-the project release archive and place it at:
+The approximately 2.8 GiB checkpoint is not tracked in Git. Download it directly
+from Hugging Face to the default checkpoint path:
 
 ```bash
 mkdir -p checkpoints
-mv checkpoint.pth checkpoints/checkpoint.pth
+curl -L \
+  https://huggingface.co/hanw98/cognate/resolve/main/checkpoint.pth \
+  -o checkpoints/checkpoint.pth
 ```
 
 Its expected SHA-256 checksum and byte size are recorded in
