@@ -21,9 +21,6 @@ The repository supports:
 | Extract model representations | `model.embed()` | `embed-batch` |
 | Train the reciprocal model | — | `scripts/train_single.sh`, `scripts/train_4gpu.sh` |
 
-The repository provides the model architecture, losses, data processing,
-training defaults, and evaluation metrics used by COGNATE.
-
 ## Installation
 
 Python 3.10 or newer is supported. The manuscript environment used Python 3.13,
@@ -146,9 +143,6 @@ python -m src.cli generate \
   --num-return-sequences 10
 ```
 
-All generation interfaces use seed `3407` by default. Override `--seed` only
-when a different reproducible run is required.
-
 ### Batch generation
 
 The input CSV must contain `peptide` and either `hla` or `hla_sequence`. See
@@ -210,10 +204,6 @@ python -m src.cli generate-multitarget-batch \
   --input data/examples/multitarget_inputs.csv \
   --out outputs/multitarget_batch.csv
 ```
-
-COGNATE removes invalid and duplicate sequences, scores each candidate under all
-targets, and ranks candidates by their minimum target score. When off-targets are
-provided, the maximum off-target score is subtracted from the ranking score.
 
 ## Triplet scoring
 
