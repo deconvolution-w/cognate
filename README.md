@@ -52,7 +52,7 @@ COGNATE uses `facebook/esm2_t33_650M_UR50D` through Hugging Face Transformers.
 Download it once into the local Hugging Face cache:
 
 ```bash
-python -c "from huggingface_hub import snapshot_download; snapshot_download('facebook/esm2_t33_650M_UR50D')"
+python -c "from huggingface_hub import snapshot_download; snapshot_download('facebook/esm2_t33_650M_UR50D', allow_patterns=['pytorch_model.bin', '*.json', '*.txt'])"
 ```
 
 Inference runs in offline mode by default. Alternatively, add `--online` to the
