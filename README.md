@@ -1,8 +1,6 @@
 # COGNATE
 
-This repository contains the research code accompanying **“Learning the
-constraints of T-cell antigen perception with a reciprocal immune language
-model.”**
+This repository contains the research code accompanying **“Unifying TCR–pMHC modeling through reciprocal generation.”**
 
 COGNATE is a reciprocal immune language model that learns the constraints of
 T-cell antigen perception by modeling both directions of the interaction:
